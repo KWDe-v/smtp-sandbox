@@ -1,0 +1,14 @@
+{
+  "main": {
+    "nodes": 1,
+    "daemonize": false,
+    "user": "root",
+    "group": "root",
+    "listen": ["0.0.0.0:25", "0.0.0.0:587"],
+    "banner": "SMTP Sandbox Haraka Server ready",
+    "greeting": "SMTP Sandbox Haraka Server ready"
+  },
+  "headers": {
+    "show_version": false
+  }
+}

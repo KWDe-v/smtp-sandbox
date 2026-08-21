@@ -1,0 +1,12 @@
+{
+  "name": "smtp-sandbox-haraka",
+  "version": "1.0.0",
+  "description": "Haraka SMTP Server for SMTP Sandbox",
+  "main": "server.js",
+  "scripts": {
+    "start": "haraka -c ."
+  },
+  "dependencies": {
+    "haraka": "^3.0.4"
+  }
+}

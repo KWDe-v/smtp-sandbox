@@ -1,0 +1,212 @@
+networks:
+  sandbox-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  storage_data:
+    driver: local
+
+services:
+  # ============================================================================
+  # 1. Banco de Dados MySQL 8.0
+  # ============================================================================
+  mysql:
+    image: mysql:8.0
+    container_name: smtp_sandbox_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_sandbox_secret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-smtp_sandbox}
+      MYSQL_USER: ${MYSQL_USER:-sandbox_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sandbox_secret_pass}
+      TZ: UTC
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    networks:
+      - sandbox-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_sandbox_secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # 2. phpMyAdmin
+  # ============================================================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: smtp_sandbox_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "${PMA_PORT:-8080}:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - sandbox-net
+
+  # ============================================================================
+  # 3. Redis
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: smtp_sandbox_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sandbox-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # 4. Backend REST API (Node.js + TypeScript)
+  # ============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smtp_sandbox_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 4000
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      API_URL: ${API_URL:-http://localhost:4000}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-smtp_sandbox}
+      MYSQL_USER: ${MYSQL_USER:-sandbox_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sandbox_secret_pass}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_access_key_change_in_production_min_32_bytes}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super_secret_jwt_refresh_key_change_in_production_min_32_bytes}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      STORAGE_PATH: /app/storage/attachments
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-webhook_global_signing_secret_xyz123}
+    ports:
+      - "4000:4000"
+    volumes:
+      - storage_data:/app/storage/attachments
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sandbox-net
+
+  # ============================================================================
+  # 5. Frontend (Nuxt 3 + Vue 3)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smtp_sandbox_frontend
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_API_BASE: ${API_URL:-http://localhost:4000}
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - sandbox-net
+
+  # ============================================================================
+  # 6. Haraka SMTP Server
+  # ============================================================================
+  smtp:
+    build:
+      context: ./smtp
+      dockerfile: Dockerfile
+    container_name: smtp_sandbox_haraka
+    restart: unless-stopped
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:4000
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-smtp_sandbox}
+      MYSQL_USER: ${MYSQL_USER:-sandbox_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sandbox_secret_pass}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "${SMTP_PORT:-25}:25"
+      - "${SMTP_SUBMISSION_PORT:-587}:587"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - sandbox-net
+
+  # ============================================================================
+  # 7. Dovecot IMAP Server
+  # ============================================================================
+  dovecot:
+    build:
+      context: ./imap
+      dockerfile: Dockerfile
+    container_name: smtp_sandbox_dovecot
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-smtp_sandbox}
+      MYSQL_USER: ${MYSQL_USER:-sandbox_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-sandbox_secret_pass}
+    ports:
+      - "${IMAP_PORT:-143}:143"
+      - "${IMAPS_PORT:-993}:993"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - sandbox-net
+
+  # ============================================================================
+  # 8. Nginx Reverse Proxy (HTTP & HTTPS SSL)
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: smtp_sandbox_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - sandbox-net

@@ -1,0 +1,342 @@
+openapi: 3.0.3
+info:
+  title: SMTP Sandbox API Reference
+  version: 1.0.0
+  description: |
+    API REST para a plataforma de Sandbox SMTP e Webmail em Tempo Real.
+    Permite criação de domínios, caixas postais, consulta de mensagens recebidas, download de anexos, disparo de webhooks e geração de API Keys.
+servers:
+  - url: /api
+    description: Servidor de Desenvolvimento / Produção
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: Use sua chave no formato 'Bearer sk_live_...'
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      responses:
+        '200':
+          description: Sistema operacional
+
+  /auth/register:
+    post:
+      summary: Registrar usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        '201':
+          description: Usuário registrado com sucesso
+
+  /auth/login:
+    post:
+      summary: Login de usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Autenticado com sucesso
+
+  /auth/refresh:
+    post:
+      summary: Atualizar access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Token renovado
+
+  /user:
+    get:
+      summary: Obter perfil do usuário autenticado
+      responses:
+        '200':
+          description: Perfil retornado
+    patch:
+      summary: Atualizar perfil do usuário
+      responses:
+        '200':
+          description: Perfil atualizado
+
+  /domains:
+    get:
+      summary: Listar domínios do usuário
+      responses:
+        '200':
+          description: Lista de domínios
+    post:
+      summary: Cadastrar novo domínio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain]
+              properties:
+                domain: { type: string }
+      responses:
+        '201':
+          description: Domínio criado
+
+  /domains/{id}:
+    get:
+      summary: Obter dados de um domínio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes do domínio
+    delete:
+      summary: Excluir domínio
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Domínio excluído
+
+  /mailboxes:
+    get:
+      summary: Listar caixas postais do usuário
+      responses:
+        '200':
+          description: Lista de caixas
+    post:
+      summary: Criar nova caixa postal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domainId, username]
+              properties:
+                domainId: { type: integer }
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: Caixa criada
+
+  /mailboxes/{id}:
+    get:
+      summary: Obter caixa postal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes da caixa
+    delete:
+      summary: Excluir caixa postal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Caixa excluída
+
+  /messages/mailbox/{id}:
+    get:
+      summary: Listar mensagens da caixa postal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: page
+          in: query
+          schema: { type: integer }
+        - name: limit
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Mensagens da caixa
+
+  /messages/{id}:
+    get:
+      summary: Obter mensagem completa com anexos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Mensagem encontrada
+    delete:
+      summary: Excluir mensagem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Mensagem excluída
+
+  /messages/{id}/raw:
+    get:
+      summary: Obter mensagem RAW RFC822
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Mensagem em texto bruto
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /messages/{id}/headers:
+    get:
+      summary: Obter headers da mensagem em JSON
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Headers JSON
+
+  /messages/{id}/read:
+    patch:
+      summary: Marcar mensagem como lida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Marcada como lida
+
+  /messages/{id}/unread:
+    patch:
+      summary: Marcar mensagem como não lida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Marcada como não lida
+
+  /attachments/{id}:
+    get:
+      summary: Download de arquivo anexo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Stream binário do arquivo
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+
+  /api-keys:
+    get:
+      summary: Listar API Keys
+      responses:
+        '200':
+          description: Lista de chaves
+    post:
+      summary: Gerar nova API Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                expiresInDays: { type: integer }
+      responses:
+        '201':
+          description: Chave criada
+
+  /webhooks:
+    get:
+      summary: Listar webhooks
+      responses:
+        '200':
+          description: Lista de webhooks
+    post:
+      summary: Criar webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, events]
+              properties:
+                url: { type: string }
+                events: { type: array, items: { type: string } }
+      responses:
+        '201':
+          description: Webhook cadastrado
+
+  /events:
+    get:
+      summary: Stream Server-Sent Events (SSE) em tempo real
+      responses:
+        '200':
+          description: Stream SSE contínuo
+          content:
+            text/event-stream:
+              schema: { type: string }

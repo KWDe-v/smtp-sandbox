@@ -1,0 +1,15 @@
+# Configuração de Conexão SQL do Dovecot com MySQL
+driver = mysql
+connect = host=mysql dbname=smtp_sandbox user=sandbox_user password=sandbox_secret_pass
+default_pass_scheme = BLF-CRYPT
+
+# Consulta de autenticação da Mailbox
+password_query = SELECT email as user, password_hash as password \
+  FROM mailboxes \
+  WHERE email = '%u' AND status = 'active'
+
+# Consulta de atributos do usuário
+user_query = SELECT '/var/mail/vhosts/%d/%n' as home, 5000 as uid, 5000 as gid, \
+  concat('*:storage=', quota, 'B') as quota_rule \
+  FROM mailboxes \
+  WHERE email = '%u' AND status = 'active'
