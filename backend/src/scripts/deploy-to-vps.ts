@@ -173,8 +173,9 @@ async function main() {
 
     console.log('\n====================================================');
     console.log('🎉 DEPLOY CONCLUÍDO COM SUCESSO NA VPS!');
-    console.log(`🌐 Dashboard: http://${VPS_HOST}:3000 (ou http://${VPS_HOST})`);
-    console.log(`📚 API & Docs: http://${VPS_HOST}:4000/api/docs`);
+    console.log(`🌐 Painel Web: https://app.asgardcp.com.br (ou http://${VPS_HOST})`);
+    console.log(`📚 Documentação da API: https://app.asgardcp.com.br/docs`);
+    console.log(`🔌 API Base URL: https://app.asgardcp.com.br`);
     console.log(`🗄️ phpMyAdmin: http://${VPS_HOST}:8080`);
     console.log(`✉️ SMTP Portas: 25 e 587`);
     console.log(`📬 IMAP Portas: 143 e 993`);

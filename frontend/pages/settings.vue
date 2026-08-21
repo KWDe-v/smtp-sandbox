@@ -123,7 +123,7 @@ onMounted(() => {
             <div class="guide-item">
               <h4>Exemplo: Node.js / JavaScript</h4>
               <pre class="code-box">const transporter = nodemailer.createTransport({
-  host: '2.24.100.34',
+  host: 'mail.asgardcp.com.br',
   port: 25,
   secure: false
 });</pre>
@@ -132,14 +132,14 @@ onMounted(() => {
             <div class="guide-item">
               <h4>Exemplo: PHP / Laravel (.env)</h4>
               <pre class="code-box">MAIL_MAILER=smtp
-MAIL_HOST=2.24.100.34
+MAIL_HOST=mail.asgardcp.com.br
 MAIL_PORT=25
 MAIL_ENCRYPTION=null</pre>
             </div>
 
             <div class="guide-item">
               <h4>Exemplo: Python / Django</h4>
-              <pre class="code-box">EMAIL_HOST = '2.24.100.34'
+              <pre class="code-box">EMAIL_HOST = 'mail.asgardcp.com.br'
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False</pre>
             </div>

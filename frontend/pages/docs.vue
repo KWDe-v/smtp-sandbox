@@ -13,9 +13,9 @@ const copiedSnippet = ref('');
 
 const snippets = {
   getDomains: {
-    curl: `curl http://2.24.100.34:4000/domains \\
+    curl: `curl https://app.asgardcp.com.br/domains \\
   -H "Authorization: Bearer SUA_CHAVE_DE_API"`,
-    javascript: `const res = await fetch('http://2.24.100.34:4000/domains', {
+    javascript: `const res = await fetch('https://app.asgardcp.com.br/domains', {
   headers: { 'Authorization': 'Bearer ' + API_KEY }
 });
 const domains = await res.json();
@@ -23,11 +23,11 @@ console.log(domains);`,
     python: `import requests
 
 headers = {'Authorization': 'Bearer SUA_CHAVE_DE_API'}
-response = requests.get('http://2.24.100.34:4000/domains', headers=headers)
+response = requests.get('https://app.asgardcp.com.br/domains', headers=headers)
 domains = response.json()
 print(domains)`,
     php: `<?php
-$ch = curl_init('http://2.24.100.34:4000/domains');
+$ch = curl_init('https://app.asgardcp.com.br/domains');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer SUA_CHAVE_DE_API']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $domains = json_decode(curl_exec($ch), true);
@@ -35,11 +35,11 @@ print_r($domains);
 ?>`,
   },
   createAccount: {
-    curl: `curl -X POST http://2.24.100.34:4000/accounts \\
+    curl: `curl -X POST https://app.asgardcp.com.br/accounts \\
   -H "Authorization: Bearer SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{"address":"usuario@asgardcp.com.br","password":"minha_senha"}'`,
-    javascript: `const res = await fetch('http://2.24.100.34:4000/accounts', {
+    javascript: `const res = await fetch('https://app.asgardcp.com.br/accounts', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ' + API_KEY,
@@ -62,10 +62,10 @@ payload = {
     'address': 'usuario@asgardcp.com.br',
     'password': 'minha_senha'
 }
-response = requests.post('http://2.24.100.34:4000/accounts', json=payload, headers=headers)
+response = requests.post('https://app.asgardcp.com.br/accounts', json=payload, headers=headers)
 print(response.json())`,
     php: `<?php
-$ch = curl_init('http://2.24.100.34:4000/accounts');
+$ch = curl_init('https://app.asgardcp.com.br/accounts');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'address' => 'usuario@asgardcp.com.br',
@@ -81,11 +81,11 @@ print_r($res);
 ?>`,
   },
   postMessages: {
-    curl: `curl -X POST http://2.24.100.34:4000/messages \\
+    curl: `curl -X POST https://app.asgardcp.com.br/messages \\
   -H "Authorization: Bearer SUA_CHAVE_DE_API" \\
   -H "Content-Type: application/json" \\
   -d '{"address":"usuario@asgardcp.com.br","password":"minha_senha"}'`,
-    javascript: `const res = await fetch('http://2.24.100.34:4000/messages', {
+    javascript: `const res = await fetch('https://app.asgardcp.com.br/messages', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ' + API_KEY,
@@ -108,11 +108,11 @@ payload = {
     'address': 'usuario@asgardcp.com.br',
     'password': 'minha_senha'
 }
-response = requests.post('http://2.24.100.34:4000/messages', json=payload, headers=headers)
+response = requests.post('https://app.asgardcp.com.br/messages', json=payload, headers=headers)
 messages = response.json()
 print('Mensagens:', messages)`,
     php: `<?php
-$ch = curl_init('http://2.24.100.34:4000/messages');
+$ch = curl_init('https://app.asgardcp.com.br/messages');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'address' => 'usuario@asgardcp.com.br',
@@ -128,9 +128,9 @@ print_r($messages);
 ?>`,
   },
   getMessageById: {
-    curl: `curl "http://2.24.100.34:4000/messages/1?password=minha_senha" \\
+    curl: `curl "https://app.asgardcp.com.br/messages/1?password=minha_senha" \\
   -H "Authorization: Bearer SUA_CHAVE_DE_API"`,
-    javascript: `const res = await fetch('http://2.24.100.34:4000/messages/1?password=minha_senha', {
+    javascript: `const res = await fetch('https://app.asgardcp.com.br/messages/1?password=minha_senha', {
   headers: { 'Authorization': 'Bearer ' + API_KEY }
 });
 const email = await res.json();
@@ -140,12 +140,12 @@ console.log('HTML:', email.html);`,
 
 headers = {'Authorization': 'Bearer SUA_CHAVE_DE_API'}
 params = {'password': 'minha_senha'}
-response = requests.get('http://2.24.100.34:4000/messages/1', headers=headers, params=params)
+response = requests.get('https://app.asgardcp.com.br/messages/1', headers=headers, params=params)
 email = response.json()
 print('Assunto:', email['subject'])
 print('HTML:', email['html'])`,
     php: `<?php
-$ch = curl_init('http://2.24.100.34:4000/messages/1?password=minha_senha');
+$ch = curl_init('https://app.asgardcp.com.br/messages/1?password=minha_senha');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer SUA_CHAVE_DE_API']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $email = json_decode(curl_exec($ch), true);
@@ -186,7 +186,7 @@ onMounted(() => {
         <!-- Banner de Autenticação Obrigatória -->
         <div class="glass-card auth-banner">
           <div class="auth-banner-content">
-            <div class="auth-badge">🔒 Segurança Dupla</div>
+            <div class="auth-badge">🔒 Segurança HTTPS Ativa</div>
             <h3>Chave de API + E-mail e Senha via POST</h3>
             <p>
               Para criar e consultar mensagens, envie o cabeçalho <code>Authorization</code> com sua Chave de API e o corpo JSON com o <strong>endereço de e-mail e a senha</strong> da caixa.
@@ -200,7 +200,7 @@ onMounted(() => {
           </div>
           <div class="host-info">
             <div class="host-label">URL Base da API:</div>
-            <code class="host-url">http://2.24.100.34:4000</code>
+            <code class="host-url">https://app.asgardcp.com.br</code>
           </div>
         </div>
 
