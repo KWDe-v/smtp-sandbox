@@ -22,6 +22,8 @@ const newDomainName = ref('');
 const createLoading = ref(false);
 const verifyingId = ref<number | null>(null);
 const errorMsg = ref('');
+const currentHost = ref('179.199.136.14');
+
 const copiedField = ref('');
 
 async function loadDomains() {
@@ -96,6 +98,9 @@ async function handleDeleteDomain(id: number, domain: string) {
 }
 
 onMounted(() => {
+  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost') {
+    currentHost.value = window.location.hostname;
+  }
   auth.initAuth();
   if (!auth.isAuthenticated.value) {
     router.push('/login');
@@ -118,6 +123,10 @@ onMounted(() => {
       </Navbar>
 
       <main class="app-main">
+        <div v-if="errorMsg" class="error-banner">
+          {{ errorMsg }}
+        </div>
+
         <div class="glass-card table-card">
           <div v-if="loading" class="loading-state">
             Carregando domínios...
@@ -126,65 +135,74 @@ onMounted(() => {
           <div v-else-if="domains.length === 0" class="empty-state">
             <div class="empty-icon">🌐</div>
             <h3>Nenhum domínio cadastrado</h3>
-            <p>Cadastre seu primeiro domínio (ex: <code>meudominio.com.br</code>) para começar a receber e-mails.</p>
+            <p>Adicione um domínio personalizado para começar a criar caixas de e-mail e receber mensagens.</p>
             <button class="btn btn-primary" style="margin-top: 16px;" @click="showCreateModal = true">
-              Cadastrar Primeiro Domínio
+              ➕ Cadastrar Primeiro Domínio
             </button>
           </div>
 
-          <div v-else class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Domínio</th>
-                  <th>Status de Comunicação</th>
-                  <th>Token TXT de Verificação</th>
-                  <th>Criado Em</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="d in domains" :key="d.id">
-                  <td class="domain-name">
-                    <strong>{{ d.domain }}</strong>
-                  </td>
-                  <td>
-                    <span :class="['badge', d.verified ? 'badge-success' : 'badge-warning']">
-                      {{ d.verified ? '✓ Ativo / Verificado' : '⏳ Pendente DNS' }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="token-wrapper">
-                      <code class="token-code">{{ d.verification_token || 'N/A' }}</code>
-                      <button
-                        class="btn-icon-copy"
-                        title="Copiar token"
-                        @click="copyToClipboard(d.verification_token, 'TXT')"
-                      >
-                        📋
-                      </button>
-                    </div>
-                  </td>
-                  <td>{{ new Date(d.created_at).toLocaleDateString('pt-BR') }}</td>
-                  <td class="action-buttons">
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>Domínio</th>
+                <th>Status</th>
+                <th>Token de Verificação</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="d in domains" :key="d.id">
+                <td class="domain-name">
+                  <strong>{{ d.domain }}</strong>
+                  <span v-if="d.is_verified" class="badge badge-success" style="margin-left: 8px;">✓ Verificado</span>
+                  <span v-else class="badge badge-warning" style="margin-left: 8px;">⏳ Pendente</span>
+                </td>
+                <td>
+                  <span :class="['status-dot', d.is_verified ? 'verified' : 'pending']"></span>
+                  {{ d.is_verified ? 'Ativo' : 'Aguardando DNS' }}
+                </td>
+                <td>
+                  <div class="token-wrapper">
+                    <code class="token-code">{{ d.verification_token || 'N/A' }}</code>
                     <button
-                      :class="['btn btn-sm', d.verified ? 'btn-secondary' : 'btn-primary']"
+                      class="btn-icon-copy"
+                      title="Copiar Token"
+                      @click="copyToClipboard(d.verification_token, 'Token')"
+                    >
+                      📋
+                    </button>
+                  </div>
+                </td>
+                <td>{{ new Date(d.created_at).toLocaleDateString('pt-BR') }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      v-if="!d.is_verified"
+                      class="btn btn-sm btn-info"
+                      title="Ver Instruções DNS"
+                      @click="openInstructions(d)"
+                    >
+                      📖 Instruções DNS
+                    </button>
+
+                    <button
+                      v-if="!d.is_verified"
+                      class="btn btn-sm btn-primary"
                       :disabled="verifyingId === d.id"
                       @click="handleVerifyDomain(d)"
                     >
-                      {{ verifyingId === d.id ? 'Checando DNS...' : (d.verified ? '🔄 Rechecar DNS' : '🔍 Verificar DNS') }}
+                      {{ verifyingId === d.id ? 'Validando...' : '🔍 Validar' }}
                     </button>
-                    <button class="btn btn-secondary btn-sm" @click="openInstructions(d)">
-                      📋 Instruções
-                    </button>
+
                     <button class="btn btn-danger btn-sm" @click="handleDeleteDomain(d.id, d.domain)">
-                      Excluir
+                      🗑️ Excluir
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </main>
     </div>
@@ -192,10 +210,8 @@ onMounted(() => {
     <!-- Modal Novo Domínio -->
     <div v-if="showCreateModal" class="modal-backdrop" @click.self="showCreateModal = false">
       <div class="modal-content">
-        <h3>Adicionar Novo Domínio</h3>
-        <p class="modal-desc">Insira o domínio que receberá os e-mails (ex: <code>asgardcp.com.br</code>).</p>
-
-        <div v-if="errorMsg" class="error-banner">⚠️ {{ errorMsg }}</div>
+        <h3>➕ Cadastrar Novo Domínio</h3>
+        <p class="modal-desc">Digite o domínio que você deseja configurar (ex: meudominio.com.br)</p>
 
         <form @submit.prevent="handleCreateDomain">
           <div class="input-group">
@@ -204,7 +220,7 @@ onMounted(() => {
               v-model="newDomainName"
               type="text"
               class="input-control"
-              placeholder="ex: asgardcp.com.br ou sandbox.meusite.com"
+              placeholder="ex: empresa.com.br"
               required
             />
           </div>
@@ -235,10 +251,12 @@ onMounted(() => {
         </div>
 
         <div class="instructions-body">
-          <p class="instruction-tip">
-            💡 Adicione os registros abaixo no painel DNS do seu domínio (Cloudflare / Registro.br).<br>
-            <strong>Importante:</strong> Mantenha o registro <code>mail</code> em <strong>DNS Only (Nuvem Cinza)</strong>.
-          </p>
+          <div class="instruction-tip">
+            <p>
+              💡 Adicione os registros abaixo no painel DNS do seu domínio (Cloudflare / Registro.br).<br>
+              <strong>Importante:</strong> Mantenha o registro <code>mail</code> em <strong>DNS Only (Nuvem Cinza)</strong>.
+            </p>
+          </div>
 
           <div class="record-card">
             <div class="record-header">
@@ -262,13 +280,13 @@ onMounted(() => {
               <span class="record-name">Nome: <code>mail</code> (Nuvem Cinza)</span>
               <button
                 class="btn btn-sm btn-secondary"
-                @click="copyToClipboard('2.24.100.34', 'IP')"
+                @click="copyToClipboard(currentHost, 'IP')"
               >
                 {{ copiedField === 'IP' ? '✓ Copiado' : 'Copiar IP' }}
               </button>
             </div>
             <div class="record-val">
-              <code>2.24.100.34</code>
+              <code>{{ currentHost }}</code>
             </div>
           </div>
 

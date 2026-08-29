@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+﻿import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,7 +10,7 @@ if (!fs.existsSync(sslDir)) {
 console.log('Gerando chave e certificado SSL locais...');
 try {
   execSync(
-    `openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout "${sslDir}/server.key" -out "${sslDir}/server.crt" -subj "/C=BR/ST=SP/L=SaoPaulo/O=SMTP Sandbox/CN=asgardcp.com.br" -addext "subjectAltName=DNS:asgardcp.com.br,DNS:*.asgardcp.com.br,DNS:mail.asgardcp.com.br,DNS:app.asgardcp.com.br,IP:2.24.100.34"`,
+    `openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout "${sslDir}/server.key" -out "${sslDir}/server.crt" -subj "/C=BR/ST=SP/L=SaoPaulo/O=SMTP Sandbox/CN=asgardcp.com.br" -addext "subjectAltName=DNS:asgardcp.com.br,DNS:*.asgardcp.com.br,DNS:mail.asgardcp.com.br,DNS:app.asgardcp.com.br,IP:179.199.136.14"`,
     { stdio: 'inherit' }
   );
   console.log('Certificados gerados com sucesso em:', sslDir);

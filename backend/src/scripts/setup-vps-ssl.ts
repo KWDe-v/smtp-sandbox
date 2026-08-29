@@ -1,6 +1,6 @@
-import { Client } from 'ssh2';
+﻿import { Client } from 'ssh2';
 
-const VPS_HOST = '2.24.100.34';
+const VPS_HOST = '179.199.136.14';
 const VPS_USER = 'antigravity';
 const VPS_PASS = 'smtp';
 const REMOTE_DIR = '/home/antigravity/smtp-sandbox';
@@ -23,7 +23,7 @@ conn
         -keyout ${REMOTE_DIR}/nginx/ssl/server.key \
         -out ${REMOTE_DIR}/nginx/ssl/server.crt \
         -subj "/C=BR/ST=SP/L=SaoPaulo/O=SMTP Sandbox/CN=asgardcp.com.br" \
-        -addext "subjectAltName=DNS:asgardcp.com.br,DNS:*.asgardcp.com.br,DNS:mail.asgardcp.com.br,DNS:app.asgardcp.com.br,IP:2.24.100.34"
+        -addext "subjectAltName=DNS:asgardcp.com.br,DNS:*.asgardcp.com.br,DNS:mail.asgardcp.com.br,DNS:app.asgardcp.com.br,IP:179.199.136.14"
 
       ls -la ${REMOTE_DIR}/nginx/ssl/
     `;

@@ -1,16 +1,15 @@
 import { Client } from 'ssh2';
 
-const VPS_HOST = '2.24.100.34';
+const VPS_HOST = '179.199.136.14';
 const VPS_USER = 'antigravity';
 const VPS_PASS = 'smtp';
-const REMOTE_DIR = '/home/antigravity/smtp-sandbox';
 
 const conn = new Client();
 conn
   .on('ready', () => {
     console.log('✅ Conexão SSH OK!');
 
-    conn.exec(`cd ${REMOTE_DIR} && docker compose up -d --build && docker compose ps`, (err, stream) => {
+    conn.exec(`ls -l /proc/11796/cwd; ls -l /proc/11577/cwd; cat /proc/11796/cmdline`, (err, stream) => {
       if (err) throw err;
       stream
         .on('close', (code: number) => {

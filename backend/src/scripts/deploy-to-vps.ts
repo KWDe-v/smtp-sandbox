@@ -2,7 +2,7 @@ import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
 
-const VPS_HOST = '2.24.100.34';
+const VPS_HOST = '179.199.136.14';
 const VPS_USER = 'antigravity';
 const VPS_PASS = 'smtp';
 const REMOTE_DIR = '/home/antigravity/smtp-sandbox';
@@ -132,6 +132,9 @@ async function main() {
       console.log('✅ Docker e Docker Compose já instalados.');
     }
 
+    // Garante permissões no docker.sock
+    await execCommand(conn, `usermod -aG docker ${VPS_USER} && chmod 666 /var/run/docker.sock || true`, true);
+
     // 3. Prepara diretório remoto
     console.log(`\n📁 Preparando diretório remoto ${REMOTE_DIR}...`);
     await execCommand(conn, `mkdir -p ${REMOTE_DIR}`);
@@ -154,12 +157,11 @@ async function main() {
 
     // 6. Constrói e inicializa os containers com Docker Compose
     console.log('\n🚀 Construindo imagens e iniciando containers Docker...');
-    await execCommand(conn, `cd ${REMOTE_DIR} && docker compose down || true`, false);
     await execCommand(conn, `cd ${REMOTE_DIR} && docker compose up -d --build`, false);
 
     // 7. Aguarda inicialização dos serviços
-    console.log('\n⏳ Aguardando serviços ficarem saudáveis (20s)...');
-    await new Promise((r) => setTimeout(r, 20000));
+    console.log('\n⏳ Aguardando serviços ficarem saudáveis (15s)...');
+    await new Promise((r) => setTimeout(r, 15000));
 
     // 8. Verifica status dos containers
     console.log('\n📊 Status dos containers:');

@@ -12,7 +12,7 @@ export class ApiKeyService {
     return apiKeyRepository.findByUserId(userId);
   }
 
-  async createKey(userId: number, name: string, expiresInDays?: number): Promise<CreatedApiKeyResult> {
+  async createKey(userId: number, name: string, expiresInDays?: number | null): Promise<CreatedApiKeyResult> {
     const { key, hash } = generateApiKey();
 
     let expiresAt: Date | undefined;

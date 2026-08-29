@@ -1,9 +1,9 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 
 const pythonCode = `# -*- coding: utf-8 -*-
 import requests
 
-API_BASE = "http://2.24.100.34:4000"
+API_BASE = "http://179.199.136.14:4000"
 API_KEY = "4ef774f181844c4d0a278e0317c3a43f5484a35abd17c08d94451c22cf7718a7"
 
 # Cabecalho de Autenticacao Obrigatorio para TODAS as requisicoes

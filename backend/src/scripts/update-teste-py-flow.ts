@@ -1,9 +1,9 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 
 const pythonCode = `# -*- coding: utf-8 -*-
 import requests
 
-API_BASE = "http://2.24.100.34:4000"
+API_BASE = "http://179.199.136.14:4000"
 
 # 1. Get available domains
 print("1. Buscando dominios disponiveis...")

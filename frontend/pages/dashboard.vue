@@ -21,6 +21,7 @@ const stats = ref({
 
 const recentMessages = ref<any[]>([]);
 const loading = ref(true);
+const serverHost = ref('179.199.136.14');
 let pollInterval: any = null;
 
 async function loadDashboardData(isSilent = false) {
@@ -41,6 +42,9 @@ async function loadDashboardData(isSilent = false) {
 }
 
 onMounted(() => {
+  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost') {
+    serverHost.value = window.location.hostname;
+  }
   auth.initAuth();
   if (!auth.isAuthenticated.value) {
     router.push('/login');
@@ -58,8 +62,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  disconnect();
   if (pollInterval) clearInterval(pollInterval);
+  disconnect();
 });
 </script>
 
@@ -67,16 +71,16 @@ onUnmounted(() => {
   <div class="app-layout">
     <Sidebar />
     <div class="app-content">
-      <Navbar title="Visão Geral" subtitle="Acompanhe seus e-mails e caixas de entrada em tempo real" />
+      <Navbar title="Dashboard Geral" subtitle="Visão em tempo real do Sandbox SMTP e caixas virtuais" />
 
       <main class="app-main">
-        <!-- Cards de Estatísticas -->
+        <!-- Métricas Rápidas -->
         <div class="stats-grid">
           <div class="stat-card glass-card">
             <div class="stat-icon icon-indigo">🌐</div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.domainsCount }}</div>
-              <div class="stat-label">Domínios Ativos</div>
+              <div class="stat-label">Domínios Configurados</div>
             </div>
           </div>
 
@@ -84,7 +88,7 @@ onUnmounted(() => {
             <div class="stat-icon icon-purple">📬</div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.mailboxesCount }}</div>
-              <div class="stat-label">Caixas de Entrada</div>
+              <div class="stat-label">Caixas Postais Ativas</div>
             </div>
           </div>
 
@@ -92,7 +96,7 @@ onUnmounted(() => {
             <div class="stat-icon icon-blue">✉️</div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.totalMessages }}</div>
-              <div class="stat-label">Total de E-mails Recebidos</div>
+              <div class="stat-label">Total de Mensagens</div>
             </div>
           </div>
 
@@ -100,12 +104,12 @@ onUnmounted(() => {
             <div class="stat-icon icon-pink">🔔</div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.unreadMessages }}</div>
-              <div class="stat-label">E-mails Não Lidos</div>
+              <div class="stat-label">Mensagens Não Lidas</div>
             </div>
           </div>
         </div>
 
-        <!-- Banner de Início Rápido -->
+        <!-- Guia Rápido de Configuração SMTP -->
         <div class="quickstart-banner glass-card">
           <div class="quickstart-header">
             <h3>⚡ Dados para Configurar em Seus Sistemas</h3>
@@ -115,7 +119,7 @@ onUnmounted(() => {
             Para testar envios a partir de sites, lojas virtuais ou sistemas, utilize estas configurações:
           </p>
           <div class="config-chips">
-            <div class="config-chip"><b>Servidor de Envio:</b> 2.24.100.34</div>
+            <div class="config-chip"><b>Servidor de Envio:</b> {{ serverHost }}</div>
             <div class="config-chip"><b>Portas Aceitas:</b> 25 ou 587</div>
             <div class="config-chip"><b>Autenticação:</b> Livre para testes</div>
             <div class="config-chip"><b>Segurança:</b> STARTTLS Opcional</div>

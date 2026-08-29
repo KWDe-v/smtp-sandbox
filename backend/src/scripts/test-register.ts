@@ -1,6 +1,6 @@
-import { Client } from 'ssh2';
+﻿import { Client } from 'ssh2';
 
-const VPS_HOST = '2.24.100.34';
+const VPS_HOST = '179.199.136.14';
 const VPS_USER = 'antigravity';
 const VPS_PASS = 'smtp';
 
@@ -12,7 +12,7 @@ conn
     const command = `
       curl -i -X POST http://localhost:4000/api/auth/register \\
         -H "Content-Type: application/json" \\
-        -H "Origin: http://2.24.100.34" \\
+        -H "Origin: http://179.199.136.14" \\
         -d '{"name":"Kleber Washington","email":"kleberwfo51@gmail.com","password":"kleber155password"}'
     `;
 

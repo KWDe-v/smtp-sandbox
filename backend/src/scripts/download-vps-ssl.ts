@@ -1,8 +1,8 @@
-import { Client } from 'ssh2';
+﻿import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
 
-const VPS_HOST = '2.24.100.34';
+const VPS_HOST = '179.199.136.14';
 const VPS_USER = 'antigravity';
 const VPS_PASS = 'smtp';
 const REMOTE_DIR = '/home/antigravity/smtp-sandbox';
