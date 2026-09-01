@@ -155,12 +155,12 @@ onMounted(() => {
               <tr v-for="d in domains" :key="d.id">
                 <td class="domain-name">
                   <strong>{{ d.domain }}</strong>
-                  <span v-if="d.is_verified" class="badge badge-success" style="margin-left: 8px;">✓ Verificado</span>
+                  <span v-if="d.verified || d.is_verified" class="badge badge-success" style="margin-left: 8px;">✓ Verificado</span>
                   <span v-else class="badge badge-warning" style="margin-left: 8px;">⏳ Pendente</span>
                 </td>
                 <td>
-                  <span :class="['status-dot', d.is_verified ? 'verified' : 'pending']"></span>
-                  {{ d.is_verified ? 'Ativo' : 'Aguardando DNS' }}
+                  <span :class="['status-dot', (d.verified || d.is_verified) ? 'verified' : 'pending']"></span>
+                  {{ (d.verified || d.is_verified) ? 'Ativo' : 'Aguardando DNS' }}
                 </td>
                 <td>
                   <div class="token-wrapper">
@@ -178,7 +178,6 @@ onMounted(() => {
                 <td>
                   <div class="action-buttons">
                     <button
-                      v-if="!d.is_verified"
                       class="btn btn-sm btn-info"
                       title="Ver Instruções DNS"
                       @click="openInstructions(d)"
@@ -187,7 +186,7 @@ onMounted(() => {
                     </button>
 
                     <button
-                      v-if="!d.is_verified"
+                      v-if="!(d.verified || d.is_verified)"
                       class="btn btn-sm btn-primary"
                       :disabled="verifyingId === d.id"
                       @click="handleVerifyDomain(d)"

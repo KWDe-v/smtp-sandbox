@@ -15,6 +15,7 @@ export interface Domain {
   user_id: number;
   domain: string;
   verified: boolean;
+  is_verified?: boolean;
   verification_token: string | null;
   created_at: Date;
   updated_at: Date;

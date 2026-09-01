@@ -5,6 +5,15 @@ import type { RowDataPacket } from 'mysql2/promise';
 interface DomainRow extends RowDataPacket, Domain {}
 
 export class DomainRepository {
+  private mapRow(row: DomainRow): Domain {
+    const isVerified = Boolean(row.verified);
+    return {
+      ...row,
+      verified: isVerified,
+      is_verified: isVerified,
+    };
+  }
+
   async findById(id: number, userId?: number): Promise<Domain | null> {
     let sql = 'SELECT id, user_id, domain, verified, verification_token, created_at, updated_at FROM domains WHERE id = ?';
     const params: any[] = [id];
@@ -16,7 +25,7 @@ export class DomainRepository {
     sql += ' LIMIT 1';
 
     const rows = await query<DomainRow[]>(sql, params);
-    return rows.length > 0 ? rows[0] : null;
+    return rows.length > 0 ? this.mapRow(rows[0]) : null;
   }
 
   async findByDomain(domain: string): Promise<Domain | null> {
@@ -24,14 +33,15 @@ export class DomainRepository {
       'SELECT id, user_id, domain, verified, verification_token, created_at, updated_at FROM domains WHERE LOWER(domain) = LOWER(?) LIMIT 1',
       [domain]
     );
-    return rows.length > 0 ? rows[0] : null;
+    return rows.length > 0 ? this.mapRow(rows[0]) : null;
   }
 
   async findByUserId(userId: number): Promise<Domain[]> {
-    return query<DomainRow[]>(
+    const rows = await query<DomainRow[]>(
       'SELECT id, user_id, domain, verified, verification_token, created_at, updated_at FROM domains WHERE user_id = ? ORDER BY created_at DESC',
       [userId]
     );
+    return rows.map((r) => this.mapRow(r));
   }
 
   async create(data: { userId: number; domain: string; verificationToken: string; verified?: boolean }): Promise<Domain> {
